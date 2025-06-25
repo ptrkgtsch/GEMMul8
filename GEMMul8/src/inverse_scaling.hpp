@@ -28,6 +28,7 @@ __global__ void inverse_scaling_1_10(const unsigned num_moduli,
                                      const size_t sizeC,                     //
                                      const size_t incC8u,                    //
                                      const uint8_t *const __restrict__ C8u,  // input
+                                     const size_t ldc8u,                     // leading dim of C8u
                                      T *const __restrict__ C,                // output
                                      const size_t ldc,                       // leading dimension
                                      const double invM,                      //
@@ -39,10 +40,11 @@ __global__ void inverse_scaling_1_10(const unsigned num_moduli,
     if (idx >= sizeC) return;
     const auto col = idx / m;
     const auto row = idx - col * m;
+    const auto mem_idx = col * ldc8u + row;
 
     double C64f = 0.0;
     for (unsigned i = 0; i < num_moduli; ++i) {
-        const double C8u_tmp = __uint2double_rn(0u + C8u[i * incC8u + idx]); // __uint2double_rn(static_cast<uint32_t>(C8u[i * incC8u + idx]));
+        const double C8u_tmp = __uint2double_rn(0u + C8u[i * incC8u + mem_idx]); // __uint2double_rn(static_cast<uint32_t>(C8u[i * incC8u + mem_idx]));
         const double NMi     = oz2_table::NMi_dev[i];                        // constant memory
         C64f                 = fma(NMi, C8u_tmp, C64f);                      // accumulation
     }
@@ -61,6 +63,7 @@ __global__ void inverse_scaling_1_11(const unsigned num_moduli,
                                      const size_t sizeC,                     //
                                      const size_t incC8u,                    //
                                      const uint8_t *const __restrict__ C8u,  // input
+                                     const size_t ldc8u,                     // leading dim of C8u
                                      T *const __restrict__ C,                // output
                                      const size_t ldc,                       // leading dimension
                                      const double invM,                      //
@@ -72,10 +75,11 @@ __global__ void inverse_scaling_1_11(const unsigned num_moduli,
     if (idx >= sizeC) return;
     const auto col = idx / m;
     const auto row = idx - col * m;
+    const auto mem_idx = col * ldc8u + row;
 
     double C64f = 0.0;
     for (unsigned i = 0; i < num_moduli; ++i) {
-        const double C8u_tmp = __uint2double_rn(0u + C8u[i * incC8u + idx]); // __uint2double_rn(static_cast<uint32_t>(C8u[i * incC8u + idx]));
+        const double C8u_tmp = __uint2double_rn(0u + C8u[i * incC8u + mem_idx]); // __uint2double_rn(static_cast<uint32_t>(C8u[i * incC8u + mem_idx]));
         const double NMi     = oz2_table::NMi_dev[i];                        // constant memory
         C64f                 = fma(NMi, C8u_tmp, C64f);                      // accumulation
     }
@@ -95,6 +99,7 @@ __global__ void inverse_scaling_1_1b(const T beta,                           //
                                      const size_t sizeC,                     //
                                      const size_t incC8u,                    //
                                      const uint8_t *const __restrict__ C8u,  // input
+                                     const size_t ldc8u,                     // leading dim of C8u
                                      T *const __restrict__ C,                // output
                                      const size_t ldc,                       // leading dimension
                                      const double invM,                      //
@@ -106,10 +111,11 @@ __global__ void inverse_scaling_1_1b(const T beta,                           //
     if (idx >= sizeC) return;
     const auto col = idx / m;
     const auto row = idx - col * m;
+    const auto mem_idx = col * ldc8u + row;
 
     double C64f = 0.0;
     for (unsigned i = 0; i < num_moduli; ++i) {
-        const double C8u_tmp = __uint2double_rn(0u + C8u[i * incC8u + idx]); // __uint2double_rn(static_cast<uint32_t>(C8u[i * incC8u + idx]));
+        const double C8u_tmp = __uint2double_rn(0u + C8u[i * incC8u + mem_idx]); // __uint2double_rn(static_cast<uint32_t>(C8u[i * incC8u + mem_idx]));
         const double NMi     = oz2_table::NMi_dev[i];                        // constant memory
         C64f                 = fma(NMi, C8u_tmp, C64f);                      // error-free
     }
@@ -129,6 +135,7 @@ __global__ void inverse_scaling_1_a1(const T alpha,                          //
                                      const size_t sizeC,                     //
                                      const size_t incC8u,                    //
                                      const uint8_t *const __restrict__ C8u,  // input
+                                     const size_t ldc8u,                     // leading dim of C8u
                                      T *const __restrict__ C,                // output
                                      const size_t ldc,                       // leading dimension
                                      const double invM,                      //
@@ -140,10 +147,11 @@ __global__ void inverse_scaling_1_a1(const T alpha,                          //
     if (idx >= sizeC) return;
     const auto col = idx / m;
     const auto row = idx - col * m;
+    const auto mem_idx = col * ldc8u + row;
 
     double C64f = 0.0;
     for (unsigned i = 0; i < num_moduli; ++i) {
-        const double C8u_tmp = __uint2double_rn(0u + C8u[i * incC8u + idx]); // __uint2double_rn(static_cast<uint32_t>(C8u[i * incC8u + idx]));
+        const double C8u_tmp = __uint2double_rn(0u + C8u[i * incC8u + mem_idx]); // __uint2double_rn(static_cast<uint32_t>(C8u[i * incC8u + mem_idx]));
         const double NMi     = oz2_table::NMi_dev[i];                        // constant memory
         C64f                 = fma(NMi, C8u_tmp, C64f);                      // error-free
     }
@@ -164,6 +172,7 @@ __global__ void inverse_scaling_1_ab(const T alpha,                          //
                                      const size_t sizeC,                     //
                                      const size_t incC8u,                    //
                                      const uint8_t *const __restrict__ C8u,  // input
+                                     const size_t ldc8u,                     // leading dim of C8u
                                      T *const __restrict__ C,                // output
                                      const size_t ldc,                       // leading dimension
                                      const double invM,                      //
@@ -175,10 +184,11 @@ __global__ void inverse_scaling_1_ab(const T alpha,                          //
     if (idx >= sizeC) return;
     const auto col = idx / m;
     const auto row = idx - col * m;
+    const auto mem_idx = col * ldc8u + row;
 
     double C64f = 0.0;
     for (unsigned i = 0; i < num_moduli; ++i) {
-        const double C8u_tmp = __uint2double_rn(0u + C8u[i * incC8u + idx]); // __uint2double_rn(static_cast<uint32_t>(C8u[i * incC8u + idx]));
+        const double C8u_tmp = __uint2double_rn(0u + C8u[i * incC8u + mem_idx]); // __uint2double_rn(static_cast<uint32_t>(C8u[i * incC8u + mem_idx]));
         const double NMi     = oz2_table::NMi_dev[i];                        // constant memory
         C64f                 = fma(NMi, C8u_tmp, C64f);                      // error-free
     }
@@ -198,6 +208,7 @@ __global__ void inverse_scaling_2_10(const unsigned num_moduli,
                                      const size_t sizeC,                     //
                                      const size_t incC8u,                    //
                                      const uint8_t *const __restrict__ C8u,  // input
+                                     const size_t ldc8u,                     // leading dim of C8u
                                      double *const __restrict__ C,           // output
                                      const size_t ldc,                       // leading dimension
                                      const double invM,                      //
@@ -210,11 +221,12 @@ __global__ void inverse_scaling_2_10(const unsigned num_moduli,
     if (idx >= sizeC) return;
     const auto col = idx / m;
     const auto row = idx - col * m;
+    const auto mem_idx = col * ldc8u + row;
 
     double C64f1 = 0.0;
     double C64f2 = 0.0;
     for (unsigned i = 0; i < num_moduli; ++i) {
-        const double C8u_tmp = __uint2double_rn(0u + C8u[i * incC8u + idx]); // __uint2double_rn(static_cast<uint32_t>(C8u[i * incC8u + idx]));
+        const double C8u_tmp = __uint2double_rn(0u + C8u[i * incC8u + mem_idx]); // __uint2double_rn(static_cast<uint32_t>(C8u[i * incC8u + mem_idx]));
         const double NMi1    = oz2_table::NMi_dev[i * 2];                    // constant memory
         const double NMi2    = oz2_table::NMi_dev[i * 2 + 1];                // constant memory
         C64f1                = fma(NMi1, C8u_tmp, C64f1);                    // error-free
@@ -235,6 +247,7 @@ __global__ void inverse_scaling_2_11(const unsigned num_moduli,
                                      const size_t sizeC,                     //
                                      const size_t incC8u,                    //
                                      const uint8_t *const __restrict__ C8u,  // input
+                                     const size_t ldc8u,                     // leading dim of C8u
                                      double *const __restrict__ C,           // output
                                      const size_t ldc,                       // leading dimension
                                      const double invM,                      //
@@ -247,11 +260,12 @@ __global__ void inverse_scaling_2_11(const unsigned num_moduli,
     if (idx >= sizeC) return;
     const auto col = idx / m;
     const auto row = idx - col * m;
+    const auto mem_idx = col * ldc8u + row;
 
     double C64f1 = 0.0;
     double C64f2 = 0.0;
     for (unsigned i = 0; i < num_moduli; ++i) {
-        const double C8u_tmp = __uint2double_rn(0u + C8u[i * incC8u + idx]); // __uint2double_rn(static_cast<uint32_t>(C8u[i * incC8u + idx]));
+        const double C8u_tmp = __uint2double_rn(0u + C8u[i * incC8u + mem_idx]); // __uint2double_rn(static_cast<uint32_t>(C8u[i * incC8u + mem_idx]));
         const double NMi1    = oz2_table::NMi_dev[i * 2];                    // constant memory
         const double NMi2    = oz2_table::NMi_dev[i * 2 + 1];                // constant memory
         C64f1                = fma(NMi1, C8u_tmp, C64f1);                    // error-free
@@ -273,6 +287,7 @@ __global__ void inverse_scaling_2_1b(const double beta,                      //
                                      const size_t sizeC,                     //
                                      const size_t incC8u,                    //
                                      const uint8_t *const __restrict__ C8u,  // input
+                                     const size_t ldc8u,                     // leading dim of C8u
                                      double *const __restrict__ C,           // output
                                      const size_t ldc,                       // leading dimension
                                      const double invM,                      //
@@ -285,11 +300,12 @@ __global__ void inverse_scaling_2_1b(const double beta,                      //
     if (idx >= sizeC) return;
     const auto col = idx / m;
     const auto row = idx - col * m;
+    const auto mem_idx = col * ldc8u + row;
 
     double C64f1 = 0.0;
     double C64f2 = 0.0;
     for (unsigned i = 0; i < num_moduli; ++i) {
-        const double C8u_tmp = __uint2double_rn(0u + C8u[i * incC8u + idx]); // __uint2double_rn(static_cast<uint32_t>(C8u[i * incC8u + idx]));
+        const double C8u_tmp = __uint2double_rn(0u + C8u[i * incC8u + mem_idx]); // __uint2double_rn(static_cast<uint32_t>(C8u[i * incC8u + mem_idx]));
         const double NMi1    = oz2_table::NMi_dev[i * 2];                    // constant memory
         const double NMi2    = oz2_table::NMi_dev[i * 2 + 1];                // constant memory
         C64f1                = fma(NMi1, C8u_tmp, C64f1);                    // error-free
@@ -311,6 +327,7 @@ __global__ void inverse_scaling_2_a1(const double alpha,                     //
                                      const size_t sizeC,                     //
                                      const size_t incC8u,                    //
                                      const uint8_t *const __restrict__ C8u,  // input
+                                     const size_t ldc8u,                     // leading dim of C8u
                                      double *const __restrict__ C,           // output
                                      const size_t ldc,                       // leading dimension
                                      const double invM,                      //
@@ -323,11 +340,12 @@ __global__ void inverse_scaling_2_a1(const double alpha,                     //
     if (idx >= sizeC) return;
     const auto col = idx / m;
     const auto row = idx - col * m;
+    const auto mem_idx = col * ldc8u + row;
 
     double C64f1 = 0.0;
     double C64f2 = 0.0;
     for (unsigned i = 0; i < num_moduli; ++i) {
-        const double C8u_tmp = __uint2double_rn(0u + C8u[i * incC8u + idx]); // __uint2double_rn(static_cast<uint32_t>(C8u[i * incC8u + idx]));
+        const double C8u_tmp = __uint2double_rn(0u + C8u[i * incC8u + mem_idx]); // __uint2double_rn(static_cast<uint32_t>(C8u[i * incC8u + mem_idx]));
         const double NMi1    = oz2_table::NMi_dev[i * 2];                    // constant memory
         const double NMi2    = oz2_table::NMi_dev[i * 2 + 1];                // constant memory
         C64f1                = fma(NMi1, C8u_tmp, C64f1);                    // error-free
@@ -350,6 +368,7 @@ __global__ void inverse_scaling_2_ab(const double alpha,                     //
                                      const size_t sizeC,                     //
                                      const size_t incC8u,                    //
                                      const uint8_t *const __restrict__ C8u,  // input
+                                     const size_t ldc8u,                     // leading dim of C8u
                                      double *const __restrict__ C,           // output
                                      const size_t ldc,                       // leading dimension
                                      const double invM,                      //
@@ -362,11 +381,12 @@ __global__ void inverse_scaling_2_ab(const double alpha,                     //
     if (idx >= sizeC) return;
     const auto col = idx / m;
     const auto row = idx - col * m;
+    const auto mem_idx = col * ldc8u + row;
 
     double C64f1 = 0.0;
     double C64f2 = 0.0;
     for (unsigned i = 0; i < num_moduli; ++i) {
-        const double C8u_tmp = __uint2double_rn(0u + C8u[i * incC8u + idx]); // __uint2double_rn(static_cast<uint32_t>(C8u[i * incC8u + idx]));
+        const double C8u_tmp = __uint2double_rn(0u + C8u[i * incC8u + mem_idx]); // __uint2double_rn(static_cast<uint32_t>(C8u[i * incC8u + mem_idx]));
         const double NMi1    = oz2_table::NMi_dev[i * 2];                    // constant memory
         const double NMi2    = oz2_table::NMi_dev[i * 2 + 1];                // constant memory
         C64f1                = fma(NMi1, C8u_tmp, C64f1);                    // error-free
@@ -387,6 +407,7 @@ __inline__ void inverse_scaling(const unsigned num_moduli,
                                 const size_t m,            // size(C,1)
                                 const size_t n,            // size(C,2)
                                 const uint8_t *const C8u,  // input
+                                const size_t ldc8u,        // leading dim of C8u
                                 const size_t incC8u,       //
                                 float *const C,            // output
                                 const size_t ldc,          // leading dimension
@@ -401,17 +422,17 @@ __inline__ void inverse_scaling(const unsigned num_moduli,
     const double M           = oz2_table::M[table_idx][0];
     if (alpha == 1.0F) {
         if (beta == 0.0F) {
-            inverse_scaling_1_10<float><<<oz2_const::grids_invscaling, oz2_const::threads_invscaling>>>(num_moduli, m, sizeC, incC8u, C8u, C, ldc, invM, M, sftA, sftB);
+            inverse_scaling_1_10<float><<<oz2_const::grids_invscaling, oz2_const::threads_invscaling>>>(num_moduli, m, sizeC, incC8u, C8u, ldc8u, C, ldc, invM, M, sftA, sftB);
         } else if (beta == 1.0F) {
-            inverse_scaling_1_11<float><<<oz2_const::grids_invscaling, oz2_const::threads_invscaling>>>(num_moduli, m, sizeC, incC8u, C8u, C, ldc, invM, M, sftA, sftB);
+            inverse_scaling_1_11<float><<<oz2_const::grids_invscaling, oz2_const::threads_invscaling>>>(num_moduli, m, sizeC, incC8u, C8u, ldc8u, C, ldc, invM, M, sftA, sftB);
         } else {
-            inverse_scaling_1_1b<float><<<oz2_const::grids_invscaling, oz2_const::threads_invscaling>>>(beta, num_moduli, m, sizeC, incC8u, C8u, C, ldc, invM, M, sftA, sftB);
+            inverse_scaling_1_1b<float><<<oz2_const::grids_invscaling, oz2_const::threads_invscaling>>>(beta, num_moduli, m, sizeC, incC8u, C8u, ldc8u, C, ldc, invM, M, sftA, sftB);
         }
     } else {
         if (beta == 1.0F) {
-            inverse_scaling_1_a1<float><<<oz2_const::grids_invscaling, oz2_const::threads_invscaling>>>(alpha, num_moduli, m, sizeC, incC8u, C8u, C, ldc, invM, M, sftA, sftB);
+            inverse_scaling_1_a1<float><<<oz2_const::grids_invscaling, oz2_const::threads_invscaling>>>(alpha, num_moduli, m, sizeC, incC8u, C8u, ldc8u, C, ldc, invM, M, sftA, sftB);
         } else {
-            inverse_scaling_1_ab<float><<<oz2_const::grids_invscaling, oz2_const::threads_invscaling>>>(alpha, beta, num_moduli, m, sizeC, incC8u, C8u, C, ldc, invM, M, sftA, sftB);
+            inverse_scaling_1_ab<float><<<oz2_const::grids_invscaling, oz2_const::threads_invscaling>>>(alpha, beta, num_moduli, m, sizeC, incC8u, C8u, ldc8u, C, ldc, invM, M, sftA, sftB);
         }
     }
 }
@@ -421,6 +442,7 @@ __inline__ void inverse_scaling(const bool is_numM_1,
                                 const size_t m,            // size(C,1)
                                 const size_t n,            // size(C,2)
                                 const uint8_t *const C8u,  // input
+                                const size_t ldc8u,        // leading dim of C8u
                                 const size_t incC8u,       //
                                 double *const C,           // output
                                 const size_t ldc,          // leading dimension
@@ -436,17 +458,17 @@ __inline__ void inverse_scaling(const bool is_numM_1,
         const double M    = oz2_table::M[table_idx][0];
         if (alpha == 1.0) {
             if (beta == 0.0) {
-                inverse_scaling_1_10<double><<<oz2_const::grids_invscaling, oz2_const::threads_invscaling>>>(num_moduli, m, sizeC, incC8u, C8u, C, ldc, invM, M, sftA, sftB);
+                inverse_scaling_1_10<double><<<oz2_const::grids_invscaling, oz2_const::threads_invscaling>>>(num_moduli, m, sizeC, incC8u, C8u, ldc8u, C, ldc, invM, M, sftA, sftB);
             } else if (beta == 1.0) {
-                inverse_scaling_1_11<double><<<oz2_const::grids_invscaling, oz2_const::threads_invscaling>>>(num_moduli, m, sizeC, incC8u, C8u, C, ldc, invM, M, sftA, sftB);
+                inverse_scaling_1_11<double><<<oz2_const::grids_invscaling, oz2_const::threads_invscaling>>>(num_moduli, m, sizeC, incC8u, C8u, ldc8u, C, ldc, invM, M, sftA, sftB);
             } else {
-                inverse_scaling_1_1b<double><<<oz2_const::grids_invscaling, oz2_const::threads_invscaling>>>(beta, num_moduli, m, sizeC, incC8u, C8u, C, ldc, invM, M, sftA, sftB);
+                inverse_scaling_1_1b<double><<<oz2_const::grids_invscaling, oz2_const::threads_invscaling>>>(beta, num_moduli, m, sizeC, incC8u, C8u, ldc8u, C, ldc, invM, M, sftA, sftB);
             }
         } else {
             if (beta == 1.0) {
-                inverse_scaling_1_a1<double><<<oz2_const::grids_invscaling, oz2_const::threads_invscaling>>>(alpha, num_moduli, m, sizeC, incC8u, C8u, C, ldc, invM, M, sftA, sftB);
+                inverse_scaling_1_a1<double><<<oz2_const::grids_invscaling, oz2_const::threads_invscaling>>>(alpha, num_moduli, m, sizeC, incC8u, C8u, ldc8u, C, ldc, invM, M, sftA, sftB);
             } else {
-                inverse_scaling_1_ab<double><<<oz2_const::grids_invscaling, oz2_const::threads_invscaling>>>(alpha, beta, num_moduli, m, sizeC, incC8u, C8u, C, ldc, invM, M, sftA, sftB);
+                inverse_scaling_1_ab<double><<<oz2_const::grids_invscaling, oz2_const::threads_invscaling>>>(alpha, beta, num_moduli, m, sizeC, incC8u, C8u, ldc8u, C, ldc, invM, M, sftA, sftB);
             }
         }
     } else {
@@ -455,17 +477,17 @@ __inline__ void inverse_scaling(const bool is_numM_1,
         const double M2   = oz2_table::M[table_idx][1];
         if (alpha == 1.0) {
             if (beta == 0.0) {
-                inverse_scaling_2_10<<<oz2_const::grids_invscaling, oz2_const::threads_invscaling>>>(num_moduli, m, sizeC, incC8u, C8u, C, ldc, invM, M1, M2, sftA, sftB);
+                inverse_scaling_2_10<<<oz2_const::grids_invscaling, oz2_const::threads_invscaling>>>(num_moduli, m, sizeC, incC8u, C8u, ldc8u, C, ldc, invM, M1, M2, sftA, sftB);
             } else if (beta == 1) {
-                inverse_scaling_2_11<<<oz2_const::grids_invscaling, oz2_const::threads_invscaling>>>(num_moduli, m, sizeC, incC8u, C8u, C, ldc, invM, M1, M2, sftA, sftB);
+                inverse_scaling_2_11<<<oz2_const::grids_invscaling, oz2_const::threads_invscaling>>>(num_moduli, m, sizeC, incC8u, C8u, ldc8u, C, ldc, invM, M1, M2, sftA, sftB);
             } else {
-                inverse_scaling_2_1b<<<oz2_const::grids_invscaling, oz2_const::threads_invscaling>>>(beta, num_moduli, m, sizeC, incC8u, C8u, C, ldc, invM, M1, M2, sftA, sftB);
+                inverse_scaling_2_1b<<<oz2_const::grids_invscaling, oz2_const::threads_invscaling>>>(beta, num_moduli, m, sizeC, incC8u, C8u, ldc8u, C, ldc, invM, M1, M2, sftA, sftB);
             }
         } else {
             if (beta == 1.0) {
-                inverse_scaling_2_a1<<<oz2_const::grids_invscaling, oz2_const::threads_invscaling>>>(alpha, num_moduli, m, sizeC, incC8u, C8u, C, ldc, invM, M1, M2, sftA, sftB);
+                inverse_scaling_2_a1<<<oz2_const::grids_invscaling, oz2_const::threads_invscaling>>>(alpha, num_moduli, m, sizeC, incC8u, C8u, ldc8u, C, ldc, invM, M1, M2, sftA, sftB);
             } else {
-                inverse_scaling_2_ab<<<oz2_const::grids_invscaling, oz2_const::threads_invscaling>>>(alpha, beta, num_moduli, m, sizeC, incC8u, C8u, C, ldc, invM, M1, M2, sftA, sftB);
+                inverse_scaling_2_ab<<<oz2_const::grids_invscaling, oz2_const::threads_invscaling>>>(alpha, beta, num_moduli, m, sizeC, incC8u, C8u, ldc8u, C, ldc, invM, M1, M2, sftA, sftB);
             }
         }
     }

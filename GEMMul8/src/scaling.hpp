@@ -571,9 +571,11 @@ __inline__ void scaling(cublasHandle_t handle,        // handle
                         const size_t ldb,             // leading dimension
                         int8_t *const A8i,            // output (k * m)
                         const size_t lda8i,           // leading dimension
+                        const size_t incA8i,          // increment between the A8i
                         int16_t *const sftA,          // exponent of shift values for rows of A
                         int8_t *const B8i,            // output (k * n)
                         const size_t ldb8i,           // leading dimension
+                        const size_t incB8i,          // increment between the B8i
                         int16_t *const sftB,          // exponent of shift values for cols of B
                         int32_t *const C32i,          // tmp (m * n)
                         const unsigned table_idx)     //
@@ -594,20 +596,21 @@ __inline__ void scaling(cublasHandle_t handle,        // handle
     constexpr int32_t alpha = 1;
     constexpr int32_t beta  = 0;
     cudaDeviceSynchronize();
-    cublasGemmEx(handle, CUBLAS_OP_T, CUBLAS_OP_N, m, n, lda8i, &alpha, A8i, CUDA_R_8I, lda8i, B8i, CUDA_R_8I, ldb8i, &beta, C32i, CUDA_R_32I, m, CUBLAS_COMPUTE_32I, CUBLAS_GEMM_DEFAULT);
+    const size_t m_pad = ((m + 3) >> 2) << 2;
+    cublasGemmEx(handle, CUBLAS_OP_T, CUBLAS_OP_N, m_pad, n, lda8i, &alpha, A8i, CUDA_R_8I, lda8i, B8i, CUDA_R_8I, ldb8i, &beta, C32i, CUDA_R_32I, m_pad, CUBLAS_COMPUTE_32I, CUBLAS_GEMM_DEFAULT);
 
     // extract high order bits from A and B
     cudaDeviceSynchronize();
     const float log2M = oz2_table::int8tc::log2M[table_idx]; // fld(log2(M-1)/2 - 0.5)
     if (op_A == CUBLAS_OP_N) {
-        scalingA_kernel<T><<<m, oz2_const::threads_scaling>>>(n, k, lda8i * m, num_moduli, A, lda, C32i, m, A8i, lda8i, sftA, log2M);
+        scalingA_kernel<T><<<m, oz2_const::threads_scaling>>>(n, k, incA8i, num_moduli, A, lda, C32i, m_pad, A8i, lda8i, sftA, log2M);
     } else {
-        scalingAT_kernel<T><<<m, oz2_const::threads_scaling>>>(n, k, lda8i * m, num_moduli, A, lda, C32i, m, A8i, lda8i, sftA, log2M);
+        scalingAT_kernel<T><<<m, oz2_const::threads_scaling>>>(n, k, incA8i, num_moduli, A, lda, C32i, m_pad, A8i, lda8i, sftA, log2M);
     }
     if (op_B == CUBLAS_OP_N) {
-        scalingB_kernel<T><<<n, oz2_const::threads_scaling>>>(m, k, ldb8i * n, num_moduli, B, ldb, C32i, m, B8i, ldb8i, sftB, log2M);
+        scalingB_kernel<T><<<n, oz2_const::threads_scaling>>>(m, k, incB8i, num_moduli, B, ldb, C32i, m_pad, B8i, ldb8i, sftB, log2M);
     } else {
-        scalingBT_kernel<T><<<n, oz2_const::threads_scaling>>>(m, k, ldb8i * n, num_moduli, B, ldb, C32i, m, B8i, ldb8i, sftB, log2M);
+        scalingBT_kernel<T><<<n, oz2_const::threads_scaling>>>(m, k, incB8i, num_moduli, B, ldb, C32i, m_pad, B8i, ldb8i, sftB, log2M);
     }
 }
 
@@ -776,22 +779,24 @@ __inline__ void scaling(const cublasOperation_t op_A, // CUBLAS_OP_N or CUBLAS_O
                         const size_t ldb,             // leading dimension
                         int8_t *const A8i,            // output (k * m)
                         const size_t lda8i,           // leading dimension
+                        const size_t incA8i,          // increment between the A8i
                         int16_t *const sftA,          // exponent of shift values for rows of A
                         int8_t *const B8i,            // output (k * n)
                         const size_t ldb8i,           // leading dimension
+                        const size_t incB8i,          // increment between the B8i
                         int16_t *const sftB,          // exponent of shift values for cols of B
                         const unsigned table_idx)     //
 {
     const float log2M = oz2_table::vecnorm::log2M[table_idx]; // fld(log2(M-1)/2 - 1.5)
     if (op_A == CUBLAS_OP_N) {
-        scalingA_kernel<T><<<m, oz2_const::threads_scaling>>>(k, lda8i * m, num_moduli, A, lda, A8i, lda8i, sftA, log2M);
+        scalingA_kernel<T><<<m, oz2_const::threads_scaling>>>(k, incA8i, num_moduli, A, lda, A8i, lda8i, sftA, log2M);
     } else {
-        scalingB_kernel<T><<<m, oz2_const::threads_scaling>>>(k, lda8i * m, num_moduli, A, lda, A8i, lda8i, sftA, log2M);
+        scalingB_kernel<T><<<m, oz2_const::threads_scaling>>>(k, incA8i, num_moduli, A, lda, A8i, lda8i, sftA, log2M);
     }
     if (op_B == CUBLAS_OP_N) {
-        scalingB_kernel<T><<<n, oz2_const::threads_scaling>>>(k, ldb8i * n, num_moduli, B, ldb, B8i, ldb8i, sftB, log2M);
+        scalingB_kernel<T><<<n, oz2_const::threads_scaling>>>(k, incB8i, num_moduli, B, ldb, B8i, ldb8i, sftB, log2M);
     } else {
-        scalingA_kernel<T><<<n, oz2_const::threads_scaling>>>(k, ldb8i * n, num_moduli, B, ldb, B8i, ldb8i, sftB, log2M);
+        scalingA_kernel<T><<<n, oz2_const::threads_scaling>>>(k, incB8i, num_moduli, B, ldb, B8i, ldb8i, sftB, log2M);
     }
 }
 

@@ -30,9 +30,10 @@ size_t workSize(const size_t m,            // Number of rows of C
 {
     const size_t lda8i     = ((k + 15) >> 4) << 4;
     const size_t ldb8i     = lda8i;
-    const size_t sizeA     = lda8i * m;
+    const size_t m_pad     = ((m + 3) >> 2) << 2;
+    const size_t sizeA     = lda8i * m_pad;
     const size_t sizeB     = ldb8i * n;
-    const size_t sizeC     = ((m * n + 15) >> 4) << 4;
+    const size_t sizeC     = ((m_pad * n + 15) >> 4) << 4;
     const size_t size_vecA = (((m + 15) >> 4) << 4); // multiple of 16
     const size_t size_vecB = (((n + 15) >> 4) << 4); // multiple of 16
 
@@ -75,9 +76,10 @@ std::vector<double> gemm<double>(cublasHandle_t handle,        // Handle to the 
     //------------------------------
     const size_t lda8i       = ((k + 15) >> 4) << 4; // multiple of 16
     const size_t ldb8i       = lda8i;
-    const size_t sizeA       = lda8i * m;
+    const size_t m_pad       = ((m + 3) >> 2) << 2;
+    const size_t sizeA       = lda8i * m_pad;
     const size_t sizeB       = ldb8i * n;
-    const size_t sizeC       = ((m * n + 15) >> 4) << 4; // multiple of 16
+    const size_t sizeC       = ((m_pad * n + 15) >> 4) << 4; // multiple of 16
     const size_t size_vecA   = (((m + 15) >> 4) << 4);   // multiple of 16
     const unsigned table_idx = num_moduli - 2;
     const unsigned numM      = oz2_table::numM[table_idx]; // numM <= 2
@@ -132,9 +134,9 @@ std::vector<double> gemm<double>(cublasHandle_t handle,        // Handle to the 
     //------------------------------
     timing_start(timetmp);
     if (fastmode) {
-        oz2_util::vecnorm::scaling<double>(op_A, op_B, m, n, k, num_moduli, A, lda, B, ldb, A8i, lda8i, sftA, B8i, ldb8i, sftB, table_idx);
+        oz2_util::vecnorm::scaling<double>(op_A, op_B, m, n, k, num_moduli, A, lda, B, ldb, A8i, lda8i, lda8i * m_pad, sftA, B8i, ldb8i, ldb8i * n, sftB, table_idx);
     } else {
-        oz2_util::int8tc::scaling<double>(handle, op_A, op_B, m, n, k, num_moduli, A, lda, B, ldb, A8i, lda8i, sftA, B8i, ldb8i, sftB, C32i, table_idx);
+        oz2_util::int8tc::scaling<double>(handle, op_A, op_B, m, n, k, num_moduli, A, lda, B, ldb, A8i, lda8i, lda8i * m_pad, sftA, B8i, ldb8i, ldb8i * n, sftB, C32i, table_idx);
     }
     timing_stop(timetmp, timer[0]);
 
@@ -167,7 +169,7 @@ std::vector<double> gemm<double>(cublasHandle_t handle,        // Handle to the 
     // C := diag(2^sftA) * C * diag(2^sftB)
     //------------------------------
     timing_start(timetmp);
-    oz2_util::inverse_scaling(is_numM_1, num_moduli, m, n, C8u, sizeC, C, ldc, sftA, sftB, *alpha, *beta);
+    oz2_util::inverse_scaling(is_numM_1, num_moduli, m, n, C8u, m_pad, sizeC, C, ldc, sftA, sftB, *alpha, *beta);
     timing_stop(timetmp, timer[3]);
 
     return timer;
@@ -203,7 +205,8 @@ std::vector<double> gemm<float>(cublasHandle_t handle,        // Handle to the c
     //------------------------------
     const size_t lda8i       = ((k + 15) >> 4) << 4; // multiple of 16
     const size_t ldb8i       = lda8i;
-    const size_t sizeA       = lda8i * m;
+    const size_t m_pad       = ((m + 3) >> 2) << 2;
+    const size_t sizeA       = lda8i * m_pad;
     const size_t sizeB       = ldb8i * n;
     const size_t sizeC       = ((m * n + 15) >> 4) << 4; // multiple of 16
     const size_t size_vecA   = (((m + 15) >> 4) << 4);
@@ -254,9 +257,9 @@ std::vector<double> gemm<float>(cublasHandle_t handle,        // Handle to the c
     //------------------------------
     timing_start(timetmp);
     if (fastmode) {
-        oz2_util::vecnorm::scaling<float>(op_A, op_B, m, n, k, num_moduli, A, lda, B, ldb, A8i, lda8i, sftA, B8i, ldb8i, sftB, table_idx);
+        oz2_util::vecnorm::scaling<float>(op_A, op_B, m, n, k, num_moduli, A, lda, B, ldb, A8i, lda8i, lda8i * m_pad, sftA, B8i, ldb8i, ldb8i * n, sftB, table_idx);
     } else {
-        oz2_util::int8tc::scaling<float>(handle, op_A, op_B, m, n, k, num_moduli, A, lda, B, ldb, A8i, lda8i, sftA, B8i, ldb8i, sftB, C32i, table_idx);
+        oz2_util::int8tc::scaling<float>(handle, op_A, op_B, m, n, k, num_moduli, A, lda, B, ldb, A8i, lda8i, lda8i * m_pad, sftA, B8i, ldb8i, ldb8i * n, sftB, C32i, table_idx);
     }
     timing_stop(timetmp, timer[0]);
 
@@ -289,7 +292,7 @@ std::vector<double> gemm<float>(cublasHandle_t handle,        // Handle to the c
     // C := diag(2^sftA) * C * diag(2^sftB)
     //------------------------------
     timing_start(timetmp);
-    oz2_util::inverse_scaling(num_moduli, m, n, C8u, sizeC, C, ldc, sftA, sftB, *alpha, *beta);
+    oz2_util::inverse_scaling(num_moduli, m, n, C8u, m_pad, sizeC, C, ldc, sftA, sftB, *alpha, *beta);
     timing_stop(timetmp, timer[3]);
 
     return timer;
